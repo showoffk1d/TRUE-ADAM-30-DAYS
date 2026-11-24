@@ -1,0 +1,448 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>TRUE ADAM // 30 DAYS</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+/* VOICE: клинический, жёсткий, без воды — как системный трекер, который не сочувствует.
+   IDEA: страница ведёт себя как HUD-терминал наблюдения за подопытным: логи, шкалы, статусы.
+   PICTURE: живой симулятор дня в hero — шкалы статов, счётчик дней, бегущий лог.
+   COLOUR/TYPE: #09090B / #111115 / #27272A, лёд #38BDF8, сигнал #EF4444; Inter + JetBrains Mono.
+   LAYOUT: sticky-навигация, hero 2 колонки → стек на мобилке, полосы на всю ширину, футер. */
+:root{color-scheme:dark;--bg:#09090B;--card:#111115;--line:#27272A;--ink:#E4E4E7;--dim:#8A8A93;--ice:#38BDF8;--red:#EF4444;--ok:#A3E635;
+--mono:'JetBrains Mono',ui-monospace,Consolas,monospace;--sans:Inter,system-ui,-apple-system,Segoe UI,sans-serif}
+*{box-sizing:border-box;min-width:0}
+html{scroll-behavior:smooth;scroll-padding-top:72px}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.6 var(--sans);overflow-x:clip;
+background-image:linear-gradient(var(--line) 1px,transparent 1px),linear-gradient(90deg,var(--line) 1px,transparent 1px);background-size:64px 64px;background-attachment:fixed}
+body::before{content:"";position:fixed;inset:0;background:radial-gradient(ellipse at 70% 0%,rgba(56,189,248,.08),transparent 55%),linear-gradient(var(--bg) 0,rgba(9,9,11,.93) 100%);pointer-events:none;z-index:-1}
+a{color:var(--ice)}
+.wrap{max-width:1240px;margin:0 auto;padding:0 max(4vw,16px)}
+.mono{font-family:var(--mono)}
+h1,h2,h3{margin:0;line-height:1.05;text-wrap:balance}
+h2{font-size:clamp(28px,4vw,44px);font-weight:800;letter-spacing:-.02em}
+h3{font-size:20px;font-weight:600}
+p{margin:0}
+.band{padding:clamp(56px,8vw,112px) 0;border-top:1px solid var(--line)}
+.lead{color:var(--dim);max-width:62ch;margin-top:14px;font-size:17px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:4px}
+button,input,select{font:inherit;color:inherit}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:44px;padding:0 18px;border:1px solid var(--ice);background:var(--ice);color:#04121b;font:600 14px var(--mono);border-radius:3px;cursor:pointer;text-decoration:none;transition:background .15s,color .15s}
+.btn:hover{background:transparent;color:var(--ice)}
+.btn.ghost{background:transparent;color:var(--ink);border-color:var(--line)}
+.btn.ghost:hover{border-color:var(--ice);color:var(--ice)}
+:focus-visible{outline:2px solid var(--ice);outline-offset:2px}
+
+/* NAV */
+nav{position:sticky;top:0;z-index:20;background:rgba(9,9,11,.86);backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
+nav .wrap{display:flex;align-items:center;gap:20px;min-height:64px;flex-wrap:wrap}
+.logo{font:700 15px var(--mono);color:var(--ink);text-decoration:none;white-space:nowrap}
+.logo b{color:var(--ice)}
+.links{display:flex;gap:4px;margin-left:auto;flex-wrap:wrap}
+.links a{color:var(--dim);text-decoration:none;font-size:14px;padding:10px 10px;border-radius:3px}
+.links a:hover{color:var(--ink);background:var(--card)}
+@media(max-width:820px){.links{order:3;width:100%;margin:0 0 8px -10px;overflow-x:auto;flex-wrap:nowrap}.links a{flex:none}nav .btn{margin-left:auto}}
+
+/* HERO */
+.hero{position:relative;isolation:isolate;min-height:min(calc(100svh - 64px),940px);display:flex;align-items:flex-end;padding:96px 0 48px;overflow:hidden;border-bottom:1px solid var(--line)}
+.hero .art{position:absolute;inset:0;width:100%;height:100%;z-index:-2}
+.hero::after{content:"";position:absolute;inset:0;z-index:-1;background:linear-gradient(90deg,rgba(9,9,11,.92) 0%,rgba(9,9,11,.55) 45%,transparent 75%),linear-gradient(0deg,var(--bg) 0%,transparent 40%);pointer-events:none}
+.hero .wrap{width:100%}
+.glow{animation:flick 7s infinite}
+@keyframes flick{0%,100%{opacity:1}46%{opacity:1}47%{opacity:.55}48%{opacity:.95}49%{opacity:.6}50%{opacity:1}}
+.tag{display:inline-block;font:500 12px var(--mono);color:var(--ice);border:1px solid rgba(56,189,248,.4);background:rgba(9,9,11,.6);padding:6px 10px;border-radius:2px;margin-bottom:24px}
+.hero h1{font-size:clamp(56px,10vw,144px);font-weight:800;letter-spacing:-.045em;line-height:.9;text-shadow:0 4px 40px rgba(0,0,0,.6)}
+.hero h1 span{display:block;font-family:var(--mono);font-weight:500;font-size:.32em;letter-spacing:.02em;color:var(--ice);margin-top:16px}
+.hero .lead{font-size:clamp(17px,1.6vw,20px);margin-top:22px;color:#C4C4CC}
+.hero .cta{display:flex;gap:12px;flex-wrap:wrap;margin-top:32px}
+.btn.big{min-height:54px;padding:0 28px;font-size:15px}
+.hero .ghost{background:rgba(9,9,11,.5)}
+.meta{display:flex;gap:8px 28px;flex-wrap:wrap;margin-top:48px;padding-top:20px;border-top:1px solid var(--line);font:12px var(--mono);color:var(--dim)}
+.demo{display:grid;grid-template-columns:minmax(0,.75fr) minmax(0,1.25fr);gap:clamp(28px,4vw,56px);align-items:start}
+@media(max-width:960px){.demo{grid-template-columns:minmax(0,1fr)}}
+@media(max-width:600px){.hero{min-height:calc(100svh - 110px);padding-top:300px}.hero .art{height:72%}.hud{display:none}.hero::after{background:linear-gradient(0deg,var(--bg) 38%,rgba(9,9,11,.4) 62%,transparent 80%)}}
+
+/* SIM */
+.sim{padding:0;overflow:hidden}
+.sim-head{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:12px 16px;border-bottom:1px solid var(--line);font:500 12px var(--mono);color:var(--dim);flex-wrap:wrap}
+.dot{display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--ok);margin-right:8px;animation:blink 1.6s infinite}
+@keyframes blink{50%{opacity:.25}}
+.day{display:flex;align-items:baseline;gap:14px;padding:18px 16px 6px;flex-wrap:wrap}
+.day b{font:700 clamp(36px,5vw,52px) var(--mono);letter-spacing:-.03em}
+.day b i{font-style:normal;color:var(--dim);font-weight:400}
+.day .sub{font:13px var(--mono);color:var(--dim)}
+.timeline{display:grid;grid-template-columns:repeat(30,1fr);gap:2px;padding:0 16px 14px}
+.timeline span{height:6px;background:var(--line)}
+.timeline span.on{background:var(--ice)}
+.stats{padding:6px 16px 10px;display:grid;gap:12px}
+.stat .row{display:flex;justify-content:space-between;font:500 13px var(--mono);margin-bottom:6px}
+.stat .row em{font-style:normal;color:var(--dim)}
+.bar{height:10px;background:#18181C;border:1px solid var(--line);position:relative;overflow:hidden}
+.bar i{position:absolute;inset:0 auto 0 0;background:var(--ice);transition:width .45s cubic-bezier(.2,.8,.2,1),background .3s}
+.bar i::after{content:"";position:absolute;inset:0;background:repeating-linear-gradient(90deg,transparent 0 6px,rgba(9,9,11,.5) 6px 7px)}
+.stat.crit .row b{color:var(--red)}
+.stat.crit .bar i{background:var(--red)}
+.stat.good .row b{color:var(--ok)}
+.actions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;padding:12px 16px}
+.act{min-height:56px;text-align:left;padding:10px 12px;background:#0C0C0F;border:1px solid var(--line);border-radius:3px;cursor:pointer;transition:border-color .15s,background .15s}
+.act:hover:not(:disabled){border-color:var(--ice);background:#0f1a21}
+.act b{display:block;font-size:14px;font-weight:600}
+.act small{font:12px var(--mono);color:var(--dim)}
+.act.bad:hover:not(:disabled){border-color:var(--red);background:#1a0d0e}
+.act:disabled{opacity:.35;cursor:not-allowed}
+.log{height:150px;overflow-y:auto;border-top:1px solid var(--line);padding:10px 16px;font:12.5px/1.65 var(--mono);background:#0A0A0C}
+.log p{color:var(--dim)}
+.log p b{color:var(--ink);font-weight:500}
+.log .w{color:#FBBF24}.log .e{color:var(--red)}.log .s{color:var(--ice)}.log .g{color:var(--ok)}
+.sim-foot{display:flex;justify-content:space-between;gap:10px;align-items:center;padding:10px 16px;border-top:1px solid var(--line);font:12px var(--mono);color:var(--dim);flex-wrap:wrap}
+.sim-foot button{background:none;border:1px solid var(--line);padding:8px 12px;min-height:36px;cursor:pointer;border-radius:3px;font:12px var(--mono)}
+.sim-foot button:hover{border-color:var(--ice);color:var(--ice)}
+@media(max-width:420px){.actions{grid-template-columns:minmax(0,1fr)}}
+
+/* STATS CARDS */
+.grid4{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;margin-top:40px}
+.sc{padding:24px;display:flex;flex-direction:column;gap:14px}
+.sc .top{display:flex;justify-content:space-between;align-items:baseline;gap:12px}
+.sc .code{font:500 12px var(--mono);color:var(--ice)}
+.sc p{color:var(--dim)}
+.sc ul{list-style:none;margin:0;padding:0;display:grid;gap:8px;font:13px/1.5 var(--mono)}
+.sc li{display:grid;grid-template-columns:28px minmax(0,1fr);gap:6px}
+.sc li span{color:var(--ok)}.sc li span.n{color:var(--red)}.sc li span.x{color:#FBBF24}
+.sc .link{border-top:1px dashed var(--line);padding-top:12px;font-size:14px}
+.sc .link b{color:var(--ink)}
+@media(max-width:760px){.grid4{grid-template-columns:minmax(0,1fr)}}
+
+/* LOOP */
+.loop{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:1px;background:var(--line);border:1px solid var(--line);margin-top:32px}
+.loop div{background:var(--card);padding:18px}
+.loop b{font:700 13px var(--mono);color:var(--ice);display:block;margin-bottom:6px}
+.loop p{font-size:14px;color:var(--dim)}
+.mis{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.2fr);gap:24px;align-items:center;margin-top:16px;padding:24px;border-color:rgba(56,189,248,.35)}
+.mis b{font-size:13px;color:var(--ice);display:block;margin-bottom:8px}.mis p{color:var(--dim)}
+@media(max-width:760px){.mis{grid-template-columns:minmax(0,1fr)}}
+@media(max-width:760px){.loop{grid-template-columns:repeat(2,minmax(0,1fr))}}
+
+/* ROADMAP */
+.road{display:grid;gap:12px;margin-top:40px}
+.ri{display:grid;grid-template-columns:140px minmax(0,1fr);gap:20px;padding:22px 24px;align-items:start}
+.st{font:700 13px var(--mono);padding:6px 10px;border:1px solid;border-radius:2px;text-align:center;white-space:nowrap}
+.st.done{color:var(--ok);border-color:rgba(163,230,53,.4)}
+.st.prog{color:var(--ice);border-color:rgba(56,189,248,.45)}
+.st.next{color:var(--dim);border-color:var(--line)}
+.ri p{color:var(--dim);margin-top:6px;font-size:15px}
+.prog-bar{height:4px;background:var(--line);margin-top:14px;max-width:360px;position:relative;overflow:hidden}
+.prog-bar i{position:absolute;inset:0;width:40%;background:var(--ice);animation:scan 2.4s ease-in-out infinite alternate}
+@keyframes scan{from{transform:translateX(-100%)}to{transform:translateX(250%)}}
+@media(max-width:600px){.ri{grid-template-columns:minmax(0,1fr);gap:12px}.st{justify-self:start}}
+
+/* FORM */
+.fwrap{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:clamp(28px,4vw,56px);align-items:start}
+form{padding:clamp(20px,3vw,32px);display:grid;gap:18px}
+label{display:block;font:500 13px var(--mono);color:var(--dim);margin-bottom:8px}
+input[type=text],select{width:100%;min-height:48px;padding:0 14px;background:#0A0A0C;border:1px solid var(--line);border-radius:3px;font-size:16px}
+input[type=text]:focus,select:focus{border-color:var(--ice);outline:none}
+.err{border-color:var(--red)!important}
+.hint{font:12px var(--mono);color:var(--dim);margin-top:6px}
+.hint.e{color:var(--red)}
+.chk{display:flex;gap:10px;align-items:flex-start;font-size:14px;color:var(--dim);cursor:pointer}
+.chk input{width:20px;height:20px;accent-color:var(--ice);margin-top:2px;flex:none}
+.ok-box{display:none;padding:clamp(20px,3vw,32px);font:14px/1.7 var(--mono)}
+.ok-box.show{display:block}
+.ok-box b{color:var(--ok)}
+.perks{list-style:none;padding:0;margin:24px 0 0;display:grid;gap:12px}
+.perks li{display:grid;grid-template-columns:24px minmax(0,1fr);gap:10px;color:var(--dim)}
+.perks li::before{content:"+";font:700 16px var(--mono);color:var(--ice)}
+@media(max-width:860px){.fwrap{grid-template-columns:minmax(0,1fr)}}
+
+footer{border-top:1px solid var(--line);padding:32px 0 40px;font:13px var(--mono);color:var(--dim)}
+footer .wrap{display:flex;justify-content:space-between;gap:16px 32px;flex-wrap:wrap}
+footer a{color:var(--dim)}footer a:hover{color:var(--ice)}
+.alt{width:100%;padding-top:16px;border-top:1px dashed var(--line);font-size:12px}
+
+@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}html{scroll-behavior:auto}}
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="wrap">
+    <a class="logo" href="#top">TRUE_ADAM <b>//</b> 30D</a>
+    <div class="links">
+      <a href="#demo">Демо</a>
+      <a href="#stats">Статы</a>
+      <a href="#devlog">Devlog</a>
+    </div>
+    <a class="btn" href="#playtest">Получить билд</a>
+  </div>
+</nav>
+
+<header class="hero" id="top">
+  <svg class="art" viewBox="0 0 1600 900" preserveAspectRatio="xMaxYMid slice" aria-hidden="true">
+    <defs>
+      <linearGradient id="wall" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#050507"/><stop offset=".6" stop-color="#0d0f14"/><stop offset="1" stop-color="#050507"/></linearGradient>
+      <linearGradient id="door" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#bfeaff"/><stop offset=".5" stop-color="#e9f8ff"/><stop offset="1" stop-color="#7dd3fc"/></linearGradient>
+      <linearGradient id="spill" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#38BDF8" stop-opacity=".55"/><stop offset="1" stop-color="#38BDF8" stop-opacity="0"/></linearGradient>
+      <radialGradient id="halo" cx=".5" cy=".5" r=".5"><stop offset="0" stop-color="#38BDF8" stop-opacity=".45"/><stop offset=".45" stop-color="#38BDF8" stop-opacity=".12"/><stop offset="1" stop-color="#38BDF8" stop-opacity="0"/></radialGradient>
+      <radialGradient id="fog" cx=".5" cy="1" r=".7"><stop offset="0" stop-color="#93c5fd" stop-opacity=".10"/><stop offset="1" stop-color="#93c5fd" stop-opacity="0"/></radialGradient>
+      <filter id="blur" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="18"/></filter>
+    </defs>
+    <rect width="1600" height="900" fill="url(#wall)"/>
+    <g stroke="#1b1c22" fill="none">
+      <path d="M0 780H1600"/><path d="M380 0V780M1420 0V780"/><path d="M380 780L0 900M1420 780L1600 900"/>
+      <path d="M560 780L360 900M1240 780L1440 900M900 780V900" stroke="#141519"/>
+    </g>
+    <g transform="translate(150 0)">
+      <ellipse class="glow" cx="1050" cy="560" rx="420" ry="360" fill="url(#halo)"/>
+      <polygon points="990,780 1110,780 1520,900 580,900" fill="url(#spill)"/>
+      <rect x="990" y="330" width="120" height="450" fill="url(#door)" filter="url(#blur)" opacity=".8"/>
+      <rect class="glow" x="990" y="330" width="120" height="450" fill="url(#door)"/>
+      <rect x="980" y="322" width="140" height="458" fill="none" stroke="#2a2d36" stroke-width="8"/>
+      <polygon points="1040,780 1060,780 1120,900 980,900" fill="#050507" opacity=".85"/>
+      <path d="M1040 494 L1060 494 L1064 512 Q1118 518 1122 540 L1128 650 L1112 652 L1104 560 L1094 560 L1090 650 L1088 780 L1058 780 L1052 670 L1048 670 L1042 780 L1012 780 L1010 650 L1006 560 L996 560 L988 652 L972 650 L978 540 Q982 518 1036 512 Z" fill="#040405" stroke="#7dd3fc" stroke-opacity=".35" stroke-width="1.5"/>
+      <circle cx="1050" cy="468" r="27" fill="#040405" stroke="#7dd3fc" stroke-opacity=".35" stroke-width="1.5"/>
+      <g fill="none" stroke="#38BDF8" stroke-opacity=".7" stroke-width="1.5">
+        <path d="M948 420v-18h18M1152 420v-18h-18M948 800v18h18M1152 800v18h-18"/>
+      </g>
+      <g class="hud" font-family="JetBrains Mono,monospace" font-size="13" fill="#38BDF8">
+        <text x="1172" y="420">SUBJECT_01</text>
+        <text x="1172" y="440" fill="#8A8A93">STATUS: UNVERIFIED</text>
+        <path d="M1160 426H1172" stroke="#38BDF8"/>
+      </g>
+    </g>
+    <rect width="1600" height="900" fill="url(#fog)"/>
+  </svg>
+  <div class="wrap">
+    <span class="tag">GODOT 4 // 3D LIFE SIM // IN DEVELOPMENT</span>
+    <h1>TRUE ADAM<span>// 30 DAYS</span></h1>
+    <p class="lead">30 дней до ивента. Энергии, денег и воли на всё не хватит.</p>
+    <div class="cta">
+      <a class="btn big" href="#playtest">Записаться на плейтест</a>
+      <a class="btn ghost big" href="#demo">Прожить один день</a>
+    </div>
+    <div class="meta"><span>Windows PC</span><span>Закрытый плейтест</span><span>Built with Godot 4</span></div>
+  </div>
+</header>
+
+<section class="band" id="demo">
+  <div class="wrap demo">
+    <div>
+      <h2>Прожить один день</h2>
+      <p class="lead">Четыре действия. Один бюджет. Упрощённое демо без спойлеров.</p>
+    </div>
+    <div class="card sim" aria-label="Мини-симулятор одного дня">
+      <div class="sim-head"><span><span class="dot"></span>GAMESTATE.monitor()</span><span id="clock">06:00</span></div>
+      <div class="day"><b id="dayNum">01<i>/30</i></b><span class="sub" id="daySub">ДЕЙСТВИЙ ДО СНА: 3 · БЮДЖЕТ: 300₪</span></div>
+      <div class="timeline" id="timeline"></div>
+      <div class="stats" id="simStats"></div>
+      <div class="actions">
+        <button class="act" data-a="gym"><b>Пойти в зал</b><small>−энергия · −жир · +лень</small></button>
+        <button class="act" data-a="store"><b>Купить чистую еду в магазине</b><small>−бюджет · +энергия · −отёк</small></button>
+        <button class="act" data-a="sleep"><b>Поспать в квартире</b><small>+энергия · −лень · следующий день</small></button>
+        <button class="act bad" data-a="binge"><b>Сорваться и залипнуть</b><small>−лень сейчас · +жир · −челюсть</small></button>
+      </div>
+      <div class="log" id="log" aria-live="polite"></div>
+      <div class="sim-foot"><span>Баланс в билде отличается.</span><button id="reset">RESET_STATE()</button></div>
+    </div>
+  </div>
+</section>
+
+<section class="band" id="stats">
+  <div class="wrap">
+    <h2>Четыре стата. Каждый тянет остальные.</h2>
+    <p class="lead">Качаешь один — платишь другим.</p>
+    <div class="grid4" id="statCards"></div>
+  </div>
+</section>
+
+<section class="band" id="devlog">
+  <div class="wrap">
+    <h2>Статус разработки</h2>
+    <p class="lead">Без дат и выдуманных цифр.</p>
+    <div class="road">
+      <div class="card ri"><span class="st done">[DONE]</span><div><h3>Архитектура синглтона GameState и система времени</h3><p>Статы, автозагрузка, часы, смена дней.</p></div></div>
+      <div class="card ri"><span class="st prog">[IN PROGRESS]</span><div><h3>Замыкание цикла: Квартира ↔ Зал ↔ Магазин</h3><p>Двери, сохранение состояния, баланс.</p><div class="prog-bar"><i></i></div></div></div>
+      <div class="card ri"><span class="st next">[NEXT]</span><div><h3>Финальный ивент, звук, закрытый плейтест</h3></div></div>
+    </div>
+  </div>
+</section>
+
+<section class="band" id="playtest">
+  <div class="wrap fwrap">
+    <div>
+      <h2>Закрытый плейтест</h2>
+      <p class="lead">Оставь контакт — напишем, когда билд будет готов.</p>
+      <ul class="perks">
+        <li>Ранний билд для Windows PC</li>
+        <li>Связь с разработчиком</li>
+              </ul>
+    </div>
+    <div class="card">
+      <form id="pform" novalidate>
+        <div>
+          <label for="contact">EMAIL ИЛИ TELEGRAM</label>
+          <input type="text" id="contact" name="contact" placeholder="you@mail.com или @username" autocomplete="email" inputmode="email">
+          <div class="hint" id="chint">Формат: name@domain.com или @username</div>
+        </div>
+        <div>
+          <label for="platform">ПЛАТФОРМА</label>
+          <select id="platform" name="platform"><option value="windows">Windows PC</option></select>
+        </div>
+        <label class="chk"><input type="checkbox" id="devlogSub" checked> Обновления devlog</label>
+        <button class="btn" type="submit">ЗАПИСАТЬСЯ_НА_ТЕСТ()</button>
+      </form>
+      <div class="ok-box" id="okBox" aria-live="polite"></div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    <span>TRUE ADAM // 30 DAYS · инди-проект в разработке</span>
+    <span><a href="#devlog">Devlog</a> · Built with Godot 4</span>
+    <div class="alt">Рабочие альтернативы названия: (ADAM PROTOCOL) · (30 DAYS TO ADAM) · (RESET // ADAM)</div>
+  </div>
+</footer>
+
+<script>
+{
+const $=s=>document.querySelector(s);
+const art=$('.hero .art'),mq=matchMedia('(max-width:600px)');
+const fitArt=()=>{art.setAttribute('viewBox',mq.matches?'930 220 540 700':'0 0 1600 900');art.setAttribute('preserveAspectRatio',mq.matches?'xMidYMid slice':'xMaxYMid slice');};
+fitArt();mq.addEventListener('change',fitArt);
+
+/* ---------- СИМУЛЯТОР ---------- */
+const MAX_ACT=3, LIMIT=30;
+const META={
+  fat:{n:'ЖИР',u:'%',min:8,max:35,good:v=>v<=14,crit:v=>v>=28},
+  jaw:{n:'ЧЕЛЮСТЬ',u:'/100',min:0,max:100,good:v=>v>=70,crit:v=>v<=15},
+  lazy:{n:'ЛЕНЬ',u:'/100',min:0,max:100,good:v=>v<=25,crit:v=>v>=70},
+  energy:{n:'ЭНЕРГИЯ',u:'/100',min:0,max:100,good:v=>v>=75,crit:v=>v<=25}
+};
+let S;
+const init=()=>({day:1,acts:0,money:300,fat:24,jaw:20,lazy:30,energy:80,over:false});
+const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
+const pad=n=>String(n).padStart(2,'0');
+
+$('#timeline').innerHTML=Array.from({length:LIMIT},()=>'<span></span>').join('');
+$('#simStats').innerHTML=Object.keys(META).map(k=>`<div class="stat" id="s-${k}"><div class="row"><span>${META[k].n}</span><b></b></div><div class="bar"><i></i></div></div>`).join('');
+
+function log(msg,cls=''){
+  const p=document.createElement('p');
+  p.className=cls;
+  p.innerHTML=`<b>[D${pad(S.day)} ${$('#clock').textContent}]</b> `;
+  p.appendChild(document.createTextNode(msg));
+  const L=$('#log');L.appendChild(p);L.scrollTop=L.scrollHeight;
+}
+function render(){
+  for(const k in META){
+    const m=META[k],v=S[k],el=$('#s-'+k);
+    el.querySelector('b').textContent=(k==='fat'?v.toFixed(1):Math.round(v))+m.u;
+    el.querySelector('i').style.width=((v-m.min)/(m.max-m.min)*100)+'%';
+    el.classList.toggle('crit',m.crit(v));el.classList.toggle('good',m.good(v));
+  }
+  $('#dayNum').innerHTML=`${pad(S.day)}<i>/${LIMIT}</i>`;
+  $('#daySub').textContent=`ДЕЙСТВИЙ ДО СНА: ${MAX_ACT-S.acts} · БЮДЖЕТ: ${S.money}₪`;
+  $('#clock').textContent=['06:00','11:00','16:00','21:00'][S.acts];
+  document.querySelectorAll('#timeline span').forEach((s,i)=>s.classList.toggle('on',i<S.day));
+  document.querySelectorAll('.act').forEach(b=>{
+    const a=b.dataset.a;
+    b.disabled=S.over||(a!=='sleep'&&S.acts>=MAX_ACT)||(a==='store'&&S.money<40);
+  });
+}
+function sabotage(){
+  if(S.lazy>=85&&Math.random()<.55){
+    S.acts++;S.energy=clamp(S.energy-5,0,100);
+    log('САБОТАЖ: персонаж отказался выполнять действие.','e');return true;
+  }
+  return false;
+}
+const ACT={
+  gym(){
+    if(sabotage())return;
+    if(S.energy<20){S.energy=clamp(S.energy-10,0,100);S.lazy=clamp(S.lazy+15,0,100);S.jaw=clamp(S.jaw-1,0,100);
+      log('ПЕРЕТРЕН: тренировка на пустом баке. Прогресса нет, лень растёт.','e');S.acts++;return;}
+    S.energy-=25;S.fat=clamp(S.fat-.6,8,35);S.jaw=clamp(S.jaw+2,0,100);S.lazy=clamp(S.lazy+8,0,100);S.acts++;
+    log('GYM: силовая + кардио. Жир вниз, челюсть вверх, энергия уходит.','s');
+  },
+  store(){
+    if(sabotage())return;
+    S.money-=40;S.energy=clamp(S.energy+8,0,100);S.fat=clamp(S.fat-.2,8,35);S.jaw=clamp(S.jaw+1,0,100);S.lazy=clamp(S.lazy+2,0,100);S.acts++;
+    log('STORE: курица, рис, овощи. Бюджет тает, отёк уходит.','s');
+  },
+  binge(){
+    S.fat=clamp(S.fat+.8,8,35);S.jaw=clamp(S.jaw-2,0,100);S.lazy=clamp(S.lazy-10,0,100);S.energy=clamp(S.energy+5,0,100);S.money=Math.max(0,S.money-15);S.acts++;
+    log('СРЫВ: фастфуд и 4 часа ленты. Стало легче. Ненадолго.','w');
+  },
+  sleep(){
+    const skipped=S.acts===0;
+    S.energy=clamp(S.energy+45,0,100);S.lazy=clamp(S.lazy-(skipped?2:15),0,100);S.money+=25;
+    if(S.energy>=60&&S.lazy<50)S.jaw=clamp(S.jaw+1,0,100);
+    if(skipped)log('Весь день в кровати. Восстановление есть, прогресса нет.','w');
+    else log('SLEEP: день закрыт. Ресурс восстановлен.','g');
+    S.day++;S.acts=0;
+    if(S.day>LIMIT){S.day=LIMIT;finish();return;}
+    if(S.day===LIMIT)log('ДЕНЬ 30. Последний день демо.','w');
+  }
+};
+function finish(){
+  S.over=true;
+  log('ДЕМО ЗАВЕРШЕНО. Что будет дальше — только в билде.','s');
+}
+document.querySelectorAll('.act').forEach(b=>b.addEventListener('click',()=>{if(S.over)return;ACT[b.dataset.a]();
+  if(S.energy<=25&&!S.over)log('ВНИМАНИЕ: энергия критическая. Риск перетрена.','w');
+  if(S.lazy>=70&&S.lazy<85&&!S.over)log('ВНИМАНИЕ: лень в опасной зоне. Возможен саботаж.','w');
+  render();}));
+function reset(){S=init();$('#log').innerHTML='';render();log('GameState инициализирован. Демо: базовый дневной цикл.','s');}
+$('#reset').addEventListener('click',reset);
+reset();
+
+/* ---------- КАРТОЧКИ СТАТОВ ---------- */
+const CARDS=[
+  {code:'body_fat',t:'Жир / Body Fat %',d:'Падает медленно, растёт быстро.',
+   l:[['−','up','Тренировки в зале и чистая еда из магазина'],['+','n','Фастфуд, срывы, пропуски тренировок'],['!','x','Без энергии тренировка не помогает, а вредит']],
+   k:'Высокий жир прячет <b>Челюсть</b>.'},
+  {code:'jawline',t:'Челюсть / Структура',d:'Результат режима, а не одного дня.',
+   l:[['+','up','Стабильный режим, сон, чистая еда'],['−','n','Срывы: соль и сахар дают отёк'],['!','x','Проверяется в зеркале квартиры']],
+   k:'Зависит от <b>Жира</b> и <b>Энергии</b>.'},
+  {code:'laziness',t:'Лень / Сопротивление',d:'Копится от перегруза. Слишком много — саботаж.',
+   l:[['+','n','Тренировки подряд, пропуск сна, перегруз'],['−','up','Сон и, временно, срыв'],['!','x','В опасной зоне действия могут не выполниться']],
+   k:'Срыв снижает <b>Лень</b>, но бьёт по <b>Жиру</b> и <b>Челюсти</b>.'},
+  {code:'energy',t:'Энергия',d:'Валюта каждого действия.',
+   l:[['−','n','Любые действия и перемещения через двери'],['+','up','Сон и нормальная еда'],['!','x','На пустом баке тренировка превращается в перетрен']],
+   k:'Без <b>Энергии</b> не работает ничего.'}
+];
+$('#statCards').innerHTML=CARDS.map(c=>`<article class="card sc"><div class="top"><h3>${c.t}</h3><span class="code">GameState.${c.code}</span></div><p>${c.d}</p><ul>${c.l.map(([s,cl,t])=>`<li><span class="${cl==='up'?'':cl}">${s}</span>${t}</li>`).join('')}</ul><p class="link">${c.k}</p></article>`).join('');
+
+/* ---------- ФОРМА ПЛЕЙТЕСТА ---------- */
+const reEmail=/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/, reTg=/^@[A-Za-z0-9_]{5,32}$/;
+$('#pform').addEventListener('submit',async e=>{
+  e.preventDefault();
+  const inp=$('#contact'),hint=$('#chint'),v=inp.value.trim();
+  const type=reEmail.test(v)?'email':reTg.test(v)?'telegram':null;
+  inp.classList.toggle('err',!type);hint.classList.toggle('e',!type);
+  if(!type){hint.textContent='Неверный формат. Нужен email или @username (5–32 символа).';inp.focus();return;}
+  const payload={contact:v,type,platform:$('#platform').value,devlog:$('#devlogSub').checked,ts:new Date().toISOString()};
+
+  /* === СЮДА ВСТАВИТЬ ОТПРАВКУ ===
+     Вариант 1 — свой webhook (Make, Zapier, n8n, Google Apps Script):
+       await fetch('https://YOUR_WEBHOOK_URL',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});
+     Вариант 2 — Telegram Bot API (лучше через свой прокси/серверную функцию, чтобы не светить токен в коде):
+       await fetch('https://api.telegram.org/bot<BOT_TOKEN>/sendMessage',{method:'POST',headers:{'Content-Type':'application/json'},
+         body:JSON.stringify({chat_id:'<YOUR_CHAT_ID>',text:`Новая заявка: ${payload.contact} (${payload.type}), ${payload.platform}`})});
+     Сейчас данные никуда не уходят — подтверждение только на фронтенде. */
+
+  $('#pform').style.display='none';
+  const ok=$('#okBox');ok.classList.add('show');
+  ok.innerHTML='<b>[OK] ЗАЯВКА ПРИНЯТА</b><br>';
+  ok.appendChild(document.createTextNode(`contact: ${v}`));
+  ok.insertAdjacentHTML('beforeend',`<br>type: ${type}<br>platform: Windows PC`);
+});
+$('#contact').addEventListener('input',()=>{$('#contact').classList.remove('err');const h=$('#chint');h.classList.remove('e');h.textContent='Формат: name@domain.com или @username';});
+}
+</script>
+</body>
+</html>
